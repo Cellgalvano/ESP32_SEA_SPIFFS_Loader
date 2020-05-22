@@ -1,3 +1,10 @@
+/*
+  ESP32_SEA_SPIFFS_Loader
+  Version 1.1
+  Loads a bitstream named "default.bit" from the SPIFFS to the Spartan-7 FPGA on the Spartan Edge Accelerator Board.
+  This makes the board usable without a sd card.
+*/
+
 #include "FS.h"
 #include "SPIFFS.h"
 
@@ -12,7 +19,7 @@ char buf[8192];
 void setup() {
   Serial.begin(115200);
   Serial.println();
-  Serial.println("ESP32-SEA-SPIFFS-Loader V1");
+  Serial.println("ESP32-SEA-SPIFFS-Loader V1.1");
   if(!SPIFFS.begin(true)){
       Serial.println("SPIFFS Mount Failed!");
       while(true){ 
@@ -23,19 +30,18 @@ void setup() {
   
   Serial.println();
   
-  // GPIO Initialize
   pinMode(XFPGA_INTB_PIN, INPUT);
   pinMode(XFPGA_DONE_PIN, INPUT);
   pinMode(XFPGA_PROGRAM_PIN, OUTPUT);
 
   Serial.print("FPGA: Resetting ... ");
-  // FPGA configuration start sign
+  // reset FPGA configuration logic
   digitalWrite(XFPGA_PROGRAM_PIN, LOW);
   pinMode(XFPGA_CCLK_PIN, OUTPUT);
   digitalWrite(XFPGA_CCLK_PIN, LOW);
   digitalWrite(XFPGA_PROGRAM_PIN, HIGH);
 
-  // wait until fpga reports reset complete
+  // wait until FPGA reports reset complete
   while(digitalRead(XFPGA_INTB_PIN) == 0) {}
   Serial.println("DONE!");
 
@@ -57,28 +63,20 @@ void loadBitstream(){
 
   long startTime = millis();
 
-  boolean foundE = false;
-  while(file.available() && foundE == false){
-      if(foundE == false && file.read() == 'e'){
-        foundE = true;
-        Serial.println("Skipping Header!");
-      }
-  }
+  // we dont need to skip the header in the bit file, the configuration logic will ingnore data until the sync word 0xAA995566 is received
 
-  if(foundE == true){
-    Serial.print("Loading FPGA ... ");
-    pinMode(XFPGA_DIN_PIN, OUTPUT);
+  Serial.print("Loading FPGA ... ");
+  pinMode(XFPGA_DIN_PIN, OUTPUT);
 
-    while(file.available()){
-       int cnt = file.readBytes(buf, sizeof(buf));
-       for(int i=0; i<cnt; i++){ 
-        shiftOut(XFPGA_DIN_PIN, XFPGA_CCLK_PIN, MSBFIRST, buf[i]);
-       }
-    }
-    
-    Serial.println("DONE!");
-    digitalWrite(XFPGA_CCLK_PIN, LOW); 
+  while(file.available()){
+     int cnt = file.readBytes(buf, sizeof(buf));
+     for(int i=0; i<cnt; i++){ 
+      shiftOut(XFPGA_DIN_PIN, XFPGA_CCLK_PIN, MSBFIRST, buf[i]);
+     }
   }
+  
+  Serial.println("DONE!");
+  digitalWrite(XFPGA_CCLK_PIN, LOW); 
   
   file.close();
 

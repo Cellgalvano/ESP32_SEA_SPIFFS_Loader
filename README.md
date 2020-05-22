@@ -1,6 +1,16 @@
 # ESP32_SEA_SPIFFS_Loader
 SPIFFS Bitstreamloader for the Spartan Edge Accelerator Board (no SD Card required)
 
+The Spartan Edge Accelerator Boards loads the bitstream into the fpga via the onboard ESP32.  
+Default Sketch:  
+Micro SD Card --> ESP32 --> Spartan-7 (via Slave Serial Configuration Mode)  
+
+This sketch simply uses the onboard SPI flash chip (W25Q32JV, 4MB) to store the bitstream next to the ESP32 code.  
+By default the ESP32 allows you to use the normaly unused space on the flash to store files using [SPIFFS](https://github.com/pellepl/spiffs).  
+ESP32_SEA_SPIFFS_Loader:  
+SPI flash (SPIFFS) --> ESP32 --> Spartan-7 (via Slave Serial Configuration Mode)  
+
+
 ### Installation
 1. Clone the repository to your Arduino Sketchbook folder
 2. Install the [ESP32 Arduino Core](https://github.com/espressif/arduino-esp32)

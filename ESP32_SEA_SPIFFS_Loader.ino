@@ -63,7 +63,7 @@ void loadBitstream(){
 
   long startTime = millis();
 
-  // we dont need to skip the header in the bit file, the configuration logic will ingnore data until the sync word 0xAA995566 is received
+  // we dont need to skip the header in the bit file, the configuration logic will ignore data until the sync word 0xAA995566 is received
 
   Serial.print("Loading FPGA ... ");
   pinMode(XFPGA_DIN_PIN, OUTPUT);
